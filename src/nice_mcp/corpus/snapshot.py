@@ -2,7 +2,6 @@
 
 import hashlib
 import json
-from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol
@@ -24,7 +23,6 @@ class ComponentManifest(BaseModel):
     """Metadata for one retrieval component."""
 
     model_config = ConfigDict(extra="forbid")
-    kind: str
     relative_path: str
     logical_config: dict[str, str] = Field(default_factory=dict)
     sha256: str | None = None
@@ -39,11 +37,9 @@ class SnapshotManifest(BaseModel):
     page_count: int
     chunk_count: int
     source_hashes: dict[str, str]
-    documentation_revision: str | None = None
     source_sizes: dict[str, int] = Field(default_factory=dict)
     build_config: BuildConfig = Field(default_factory=BuildConfig)
     components: dict[str, ComponentManifest] = Field(default_factory=dict)
-    duplicate_content_groups: int = 0
     regression_override_reason: str | None = None
     build_stats: dict[str, int] = Field(default_factory=dict)
 
@@ -62,7 +58,6 @@ def calculate_revision(
         "build_config": (build_config or BuildConfig()).model_dump(mode="json"),
         "components": {
             name: {
-                "kind": component.kind,
                 "relative_path": component.relative_path,
                 "config": dict(sorted(component.logical_config.items())),
             }
@@ -105,11 +100,9 @@ def write_snapshot(
         page_count=len(source_hashes),
         chunk_count=len(chunks),
         source_hashes=dict(sorted(source_hashes.items())),
-        documentation_revision=documentation_revision(source_hashes),
         source_sizes=dict(sorted((source_sizes or {}).items())),
         build_config=effective_build_config,
         components=component_values,
-        duplicate_content_groups=_duplicate_content_groups(chunks),
         regression_override_reason=regression_override_reason,
         build_stats=build_stats or {},
     )
@@ -117,21 +110,10 @@ def write_snapshot(
         manifest.model_dump_json(indent=2, exclude_none=True) + "\n", encoding="utf-8"
     )
     return manifest
-
-
-def _duplicate_content_groups(chunks: list[DocChunk]) -> int:
-    counts = Counter((chunk.title, chunk.heading_path, chunk.content_markdown.strip()) for chunk in chunks)
-    return sum(count > 1 for count in counts.values())
-
-
 def load_snapshot(directory: Path, *, verify_components: bool = True) -> tuple[SnapshotManifest, list[DocChunk]]:
     """Load and verify an immutable snapshot's canonical records."""
     directory = directory.resolve(strict=True)
     manifest = SnapshotManifest.model_validate_json((directory / "manifest.json").read_text(encoding="utf-8"))
-    if manifest.documentation_revision is not None and manifest.documentation_revision != documentation_revision(
-        manifest.source_hashes
-    ):
-        raise ValueError("snapshot documentation revision does not match source hashes")
     try:
         chunks = [
             DocChunk.model_validate_json(line)
@@ -167,12 +149,6 @@ def verify_component(snapshot: Path, name: str, component: ComponentManifest) ->
     if component.sha256 and component.sha256 != tree_checksum(component_path):
         raise ValueError(f"component checksum mismatch: {name}")
     return component_path
-
-
-def documentation_revision(source_hashes: dict[str, str]) -> str:
-    """Identify canonical documentation inputs independently of retrieval indexes."""
-    canonical = json.dumps(dict(sorted(source_hashes.items())), sort_keys=True, separators=(",", ":"))
-    return "sha256:" + hashlib.sha256(canonical.encode()).hexdigest()
 
 
 def tree_checksum(directory: Path) -> str:

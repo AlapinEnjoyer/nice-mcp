@@ -39,8 +39,6 @@ class BuildConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    documentation_source: str = "https://nicegui.io"
-    documentation_scope: str = "latest"
     source_index_url: str = "https://nicegui.io/static/search_index.json"
     preferred_tokens: int = 450
     hard_tokens: int = 500

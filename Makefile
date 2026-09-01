@@ -19,5 +19,5 @@ test:
 	uv run pytest
 
 type:
-	uvx run ty check .
+	uvx ty check .
 

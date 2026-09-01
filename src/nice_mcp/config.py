@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="NICE_MCP_", frozen=True)
 
     snapshot_path: Path = Path("data/current")
+    dense_device: str = "cpu"
     retriever: RetrieverMode = RetrieverMode.HYBRID
     host: str = "127.0.0.1"
     port: int = 8000

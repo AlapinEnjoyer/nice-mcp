@@ -1,10 +1,10 @@
 """Application and build configuration."""
 
-from dataclasses import dataclass
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import BaseModel, ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,10 +33,14 @@ def get_settings() -> Settings:
     return Settings()
 
 
-@dataclass(frozen=True, slots=True)
-class BuildConfig:
+class BuildConfig(BaseModel):
     """Deterministic corpus-build configuration."""
 
+    model_config = ConfigDict(frozen=True)
+
+    documentation_source: str = "https://nicegui.io"
+    documentation_scope: str = "latest"
     source_index_url: str = "https://nicegui.io/static/search_index.json"
     preferred_tokens: int = 450
     hard_tokens: int = 500
+    tokenizer: str = "BAAI/bge-small-en-v1.5"

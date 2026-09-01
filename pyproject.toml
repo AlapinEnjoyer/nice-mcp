@@ -1,0 +1,104 @@
+[project]
+name = "nice-mcp"
+version = "0.1.0"
+description = "Unofficial NiceGUI Docs MCP server"
+readme = "README.md"
+authors = [
+    { name = "AlapinEnjoyer", email = "120122957+AlapinEnjoyer@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "bm25s>=0.3.11,<0.4.0",
+    "httpx>=0.28.1,<0.29.0",
+    "mcp>=2.1.1",
+    "pydantic>=2.13.4,<3.0.0",
+    "starlette>=1.6.0,<2.0.0",
+    "typer>=0.16.0,<1.0.0",
+    "uvicorn>=0.41.0,<0.42.0",
+    "sentence-transformers>=5.3.0",
+    "numpy>=2.5.2,<3.0.0",
+    "pydantic-settings>=2.15.0,<3.0.0",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "torch>=2.9.0,<3.0.0",
+]
+cu128 = [
+    "torch>=2.9.0,<3.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1,<10.0.0",
+    "pytest-asyncio>=1.0.0,<2.0.0",
+]
+
+[project.scripts]
+nice-mcp = "nice_mcp:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+fix = true
+unsafe-fixes = false
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle - basic PEP8 style checks: formatting / style
+    "F",     # pyflakes - errors, unused vars/imports
+    "I",     # isort - Order of imports: standard -> third party -> local
+    "B",     # bugbear - common logic bugs
+    "UP",    # pyupgrade for modern syntax
+    "N",     # PEP8 naming conventions
+    "C4",    # flake8 comprehensions
+    "C90",   # complexity check
+    "D",     # pydocstyle - docstring enforcement
+    "TID",   # flake8-tidy-imports
+    "ANN",   # flake8-annotations
+    "PTH",   # flake8-use-pathlib
+    "ASYNC", # flake8-async
+]
+
+ignore = ["E501", "E203", "B008", "ANN401", "ANN002", "ANN003", "D415", "D417"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 24
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+skip-magic-trailing-comma = false
+
+[tool.uv]
+add-bounds = "major"
+conflicts = [
+    [
+        { extra = "cpu" },
+        { extra = "cu128" },
+    ],
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu128", extra = "cu128" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

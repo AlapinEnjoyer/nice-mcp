@@ -62,7 +62,7 @@ def build_corpus_snapshot(
     *,
     regression_override: str | None = None,
     full_rebuild: bool = False,
-    dense_device: str = "cpu",
+    dense_device: str = "auto",
 ) -> BuiltSnapshot:
     """Fetch, chunk, index, validate, and write an immutable corpus snapshot."""
     include_dense = validate_requested_components(requested)
@@ -120,7 +120,7 @@ def reindex_snapshot(
     output_root: Path,
     requested: set[str],
     *,
-    dense_device: str = "cpu",
+    dense_device: str = "auto",
 ) -> BuiltSnapshot:
     """Create a new immutable revision with selected retrieval components."""
     include_dense = validate_requested_components(requested)
@@ -151,7 +151,7 @@ def build_retrieval_components(
     staging: Path,
     *,
     include_dense: bool,
-    dense_device: str = "cpu",
+    dense_device: str = "auto",
 ) -> dict[str, ComponentManifest]:
     """Build mandatory BM25 and, optionally, a dense index in a staged snapshot."""
     components: dict[str, ComponentManifest] = {}

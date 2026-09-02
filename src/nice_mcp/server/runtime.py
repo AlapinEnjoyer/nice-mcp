@@ -32,7 +32,7 @@ class CorpusService:
         snapshot: Path,
         mode: RetrieverMode = RetrieverMode.BM25,
         *,
-        dense_device: str = "cpu",
+        dense_device: str = "auto",
     ) -> "CorpusService":
         """Load and validate all immutable process-level resources."""
         resolved = snapshot.resolve(strict=True)

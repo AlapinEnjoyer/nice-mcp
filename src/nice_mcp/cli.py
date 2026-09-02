@@ -16,7 +16,7 @@ from nice_mcp.corpus.validation import validate_chunks
 from nice_mcp.server.app import create_http_app, create_mcp_server
 from nice_mcp.server.runtime import CorpusService
 
-app = typer.Typer(no_args_is_help=True, help="Build and serve authoritative NiceGUI documentation snapshots.")
+app = typer.Typer(no_args_is_help=True, help="Build and serve NiceGUI documentation snapshots.")
 
 
 def _parse_component_set(value: str, *, allowed: set[str], require: str | None = None) -> set[str]:
@@ -35,7 +35,7 @@ def build_corpus(
     retrievers: str = typer.Option("bm25", help="Comma-separated components: bm25,dense."),
     regression_override: str | None = typer.Option(None, help="Audited reason to bypass count regression gates."),
     full_rebuild: bool = typer.Option(False, "--full-rebuild", help="Ignore reusable page chunks."),
-    dense_device: str = typer.Option("cpu", help="Dense build device, for example cpu, mps, or cuda."),
+    dense_device: str = typer.Option("auto", help="Dense build device: auto, cpu, mps, or cuda."),
 ) -> None:
     """Fetch, chunk, index, validate, and atomically activate a corpus."""
     requested = _parse_component_set(retrievers, allowed=BUILD_COMPONENTS, require="bm25")
@@ -56,7 +56,7 @@ def build_index(
     snapshot: Path = typer.Argument(..., exists=True),
     output_root: Path = typer.Option(Path("data")),
     retrievers: str = typer.Option("bm25,dense"),
-    dense_device: str = typer.Option("cpu", help="Dense build device, for example cpu, mps, or cuda."),
+    dense_device: str = typer.Option("auto", help="Dense build device: auto, cpu, mps, or cuda."),
 ) -> None:
     """Create a new immutable revision with selected retrieval components."""
     requested = _parse_component_set(retrievers, allowed=BUILD_COMPONENTS, require="bm25")

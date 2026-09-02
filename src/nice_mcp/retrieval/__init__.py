@@ -14,7 +14,7 @@ def create_retriever(
     snapshot: Path,
     manifest: SnapshotManifest,
     *,
-    dense_device: str = "cpu",
+    dense_device: str = "auto",
 ) -> Retriever:
     """Load the selected retriever or fail rather than silently falling back."""
 

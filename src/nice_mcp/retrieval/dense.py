@@ -16,6 +16,20 @@ DENSE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 type Embeddings = NDArray[np.float32]
 
 
+def resolve_device(device: str) -> str:
+    """Resolve ``auto`` to the best available PyTorch device."""
+    if device != "auto":
+        return device
+    import torch
+
+    if torch.cuda.is_available():
+        return "cuda"
+    mps = getattr(torch.backends, "mps", None)
+    if mps is not None and mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 class DenseRetriever:
     """Cosine retrieval over normalized single-vector embeddings."""
 
@@ -32,10 +46,10 @@ class DenseRetriever:
         directory: Path,
         *,
         batch_size: int = 32,
-        device: str = "cpu",
+        device: str = "auto",
     ) -> "DenseRetriever":
         """Build and persist an exact dense index and its query encoder."""
-        model = SentenceTransformer(DENSE_MODEL_ID, device=device)
+        model = SentenceTransformer(DENSE_MODEL_ID, device=resolve_device(device))
         ordered_chunks = sorted(chunks, key=lambda chunk: chunk.chunk_id)
         embeddings: Embeddings = model.encode(
             [searchable_text(chunk) for chunk in ordered_chunks],
@@ -53,13 +67,13 @@ class DenseRetriever:
         return cls(model, [chunk.chunk_id for chunk in ordered_chunks], embeddings)
 
     @classmethod
-    def load(cls, directory: Path, *, device: str = "cpu") -> "DenseRetriever":
+    def load(cls, directory: Path, *, device: str = "auto") -> "DenseRetriever":
         """Load local model assets and vectors without network access."""
         ids = json.loads((directory / "ids.json").read_text(encoding="utf-8"))
         embeddings = np.load(directory / "embeddings.npy", allow_pickle=False)
         if len(ids) != len(embeddings):
             raise ValueError("dense index IDs and embeddings differ in length")
-        model = SentenceTransformer(str(directory / "model"), device=device, local_files_only=True)
+        model = SentenceTransformer(str(directory / "model"), device=resolve_device(device), local_files_only=True)
         return cls(model, ids, embeddings)
 
     def search(self, query: str, limit: int) -> list[RankedChunk]:

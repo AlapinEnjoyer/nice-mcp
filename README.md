@@ -32,8 +32,9 @@ All retrieval components:
 uv run nice-mcp build-corpus --output-root data --retrievers bm25,dense
 ```
 
-Use `--dense-device mps` on Apple Silicon or `--dense-device cuda` on a
-CUDA-enabled build host. CPU is the default.
+By default, `auto` uses CUDA when available, then Apple MPS, and otherwise
+falls back to CPU. Use `--dense-device cpu`, `--dense-device mps`, or
+`--dense-device cuda` to override device selection.
 
 The builder discovers NiceGUI pages from its search index, requests each page as
 Markdown using `Accept: text/markdown`, validates and chunks it, builds selected
@@ -65,9 +66,8 @@ NICE_MCP_RETRIEVER=hybrid \
 uv run nice-mcp serve
 ```
 
-Set `NICE_MCP_DENSE_DEVICE=mps` on Apple Silicon or
-`NICE_MCP_DENSE_DEVICE=cuda` on a compatible GPU host. Dense and hybrid
-retrieval use CPU by default.
+Dense and hybrid retrieval use automatic device selection by default. Set
+`NICE_MCP_DENSE_DEVICE=cpu`, `mps`, or `cuda` to override it.
 
 Valid retrievers are `bm25`, `dense`, and `hybrid`.
 

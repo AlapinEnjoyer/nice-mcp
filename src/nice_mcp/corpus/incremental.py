@@ -1,11 +1,15 @@
 """Incremental reconstruction of immutable documentation corpora."""
 
+import re
+
 from pydantic import BaseModel, ConfigDict
 
 from nice_mcp.config import BuildConfig
 from nice_mcp.corpus.chunking import TokenCounter, chunk_page
 from nice_mcp.corpus.models import DocChunk, RawPage
 from nice_mcp.corpus.snapshot import SnapshotManifest
+
+SECTION_PAGE_LINK = re.compile(r"^\[[^]]+\]\(/documentation/([^#/)]+)\)$")
 
 
 class IncrementalBuildStats(BaseModel):
@@ -70,7 +74,7 @@ def chunk_incrementally(
         else:
             added_pages += 1
 
-    return chunks, IncrementalBuildStats(
+    return _remove_section_aggregates(chunks), IncrementalBuildStats(
         added_pages=added_pages,
         changed_pages=changed_pages,
         removed_pages=len(prior_ids - current_ids),
@@ -78,3 +82,33 @@ def chunk_incrementally(
         rebuilt_chunks=rebuilt_chunks,
         reused_chunks=reused_chunks,
     )
+
+
+def _remove_section_aggregates(chunks: list[DocChunk]) -> list[DocChunk]:
+    """Drop section-page copies when the corresponding documentation page exists."""
+    canonical_pages = {chunk.page_id for chunk in chunks if not chunk.page_id.startswith("section_")}
+    retained = [chunk for chunk in chunks if not _is_section_aggregate(chunk, canonical_pages)]
+    by_page: dict[str, list[DocChunk]] = {}
+    for chunk in retained:
+        by_page.setdefault(chunk.page_id, []).append(chunk)
+    return [
+        chunk.model_copy(
+            update={
+                "previous_chunk_id": page_chunks[index - 1].chunk_id if index else None,
+                "next_chunk_id": page_chunks[index + 1].chunk_id if index + 1 < len(page_chunks) else None,
+            }
+        )
+        for page_chunks in by_page.values()
+        for index, chunk in enumerate(page_chunks)
+    ]
+
+
+def _is_section_aggregate(chunk: DocChunk, canonical_pages: set[str]) -> bool:
+    """Identify a section-page subtree that mirrors a canonical documentation page."""
+    if not chunk.page_id.startswith("section_"):
+        return False
+    for heading in chunk.heading_path:
+        match = SECTION_PAGE_LINK.fullmatch(heading)
+        if match is not None and match.group(1) in canonical_pages:
+            return True
+    return False

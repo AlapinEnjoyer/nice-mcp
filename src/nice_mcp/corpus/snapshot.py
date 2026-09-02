@@ -110,6 +110,8 @@ def write_snapshot(
         manifest.model_dump_json(indent=2, exclude_none=True) + "\n", encoding="utf-8"
     )
     return manifest
+
+
 def load_snapshot(directory: Path, *, verify_components: bool = True) -> tuple[SnapshotManifest, list[DocChunk]]:
     """Load and verify an immutable snapshot's canonical records."""
     directory = directory.resolve(strict=True)

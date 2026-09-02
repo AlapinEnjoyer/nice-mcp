@@ -1,4 +1,4 @@
-.PHONY: clean lint format lint-format type test
+.PHONY: clean lint format lft type test
 
 clean:
 	find . -type d -name '__pycache__' -prune -exec rm -rf {} +
@@ -11,9 +11,10 @@ lint:
 format:
 	uvx ruff format .
 
-lint-format:
+lft:
 	uvx ruff check . --fix
 	uvx ruff format .
+	uvx ty check .
 
 test:
 	uv run pytest

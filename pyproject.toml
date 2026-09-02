@@ -35,7 +35,7 @@ dev = [
 ]
 
 [project.scripts]
-nice-mcp = "nice_mcp:main"
+nice-mcp = "nice_mcp.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.12.7,<0.13.0"]

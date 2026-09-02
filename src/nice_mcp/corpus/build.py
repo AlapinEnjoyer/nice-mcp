@@ -167,9 +167,7 @@ def build_retrieval_components(
             staging / dense_path,
             device=dense_device,
         )
-        components["dense"] = component_manifest(
-            dense_path, staging, {"model_id": DENSE_MODEL_ID}
-        )
+        components["dense"] = component_manifest(dense_path, staging, {"model_id": DENSE_MODEL_ID})
     return components
 
 

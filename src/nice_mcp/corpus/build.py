@@ -74,11 +74,7 @@ def build_corpus_snapshot(
         active_manifest, active_chunks = None, []
 
     token_counter = load_token_counter(config.tokenizer)
-    pages = asyncio.run(
-        fetch_corpus(
-            config.source_index_url,
-        )
-    )
+    pages = asyncio.run(fetch_corpus(config.source_index_url))
     chunks, incremental_stats = chunk_incrementally(
         pages,
         build_config=config,

@@ -35,7 +35,7 @@ def build_corpus(
     retrievers: str = typer.Option("bm25", help="Comma-separated components: bm25,dense."),
     regression_override: str | None = typer.Option(None, help="Audited reason to bypass count regression gates."),
     full_rebuild: bool = typer.Option(False, "--full-rebuild", help="Ignore reusable page chunks."),
-    dense_device: str = typer.Option("auto", help="Dense build device: auto, cpu, mps, or cuda."),
+    dense_device: str = typer.Option("auto", help="Dense build device: auto, cpu, or mps."),
 ) -> None:
     """Fetch, chunk, index, validate, and atomically activate a corpus."""
     requested = _parse_component_set(retrievers, allowed=BUILD_COMPONENTS, require="bm25")
@@ -56,7 +56,7 @@ def build_index(
     snapshot: Path = typer.Argument(..., exists=True),
     output_root: Path = typer.Option(Path("data")),
     retrievers: str = typer.Option("bm25,dense"),
-    dense_device: str = typer.Option("auto", help="Dense build device: auto, cpu, mps, or cuda."),
+    dense_device: str = typer.Option("auto", help="Dense build device: auto, cpu, or mps."),
 ) -> None:
     """Create a new immutable revision with selected retrieval components."""
     requested = _parse_component_set(retrievers, allowed=BUILD_COMPONENTS, require="bm25")

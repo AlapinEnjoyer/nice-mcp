@@ -12,18 +12,19 @@ from nice_mcp.retrieval.base import RankedChunk, searchable_text
 
 DENSE_MODEL_ID = "BAAI/bge-small-en-v1.5"
 DENSE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
+SUPPORTED_DEVICES = {"auto", "cpu", "mps"}
 
 type Embeddings = NDArray[np.float32]
 
 
 def resolve_device(device: str) -> str:
     """Resolve ``auto`` to the best available PyTorch device."""
+    if device not in SUPPORTED_DEVICES:
+        raise ValueError(f"unsupported dense device: {device}")
     if device != "auto":
         return device
     import torch
 
-    if torch.cuda.is_available():
-        return "cuda"
     mps = getattr(torch.backends, "mps", None)
     if mps is not None and mps.is_available():
         return "mps"

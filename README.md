@@ -6,6 +6,31 @@ It builds immutable documentation snapshots offline and exposes exactly two tool
 - `search_docs(query, limit=5)` discovers ranked chunks.
 - `get_doc_chunks(chunk_ids)` returns their full Markdown.
 
+## Docker
+
+Build a self-contained CPU image with the application, current NiceGUI
+documentation, indexes, and model assets:
+
+```bash
+docker build -f deploy/Dockerfile -t nice-mcp .
+```
+
+The image can then run from any directory without the repository or a mounted
+data directory:
+
+```bash
+docker run -d \
+  --name nice-mcp \
+  --restart unless-stopped \
+  -p 127.0.0.1:8000:8000 \
+  nice-mcp
+```
+
+The MCP endpoint is available at `http://127.0.0.1:8000/mcp`. Serving is fully
+offline; rebuild the image to update the bundled documentation. If Docker reuses
+the corpus layer, pass a changed value such as
+`--build-arg CORPUS_REFRESH=2026-09-08`.
+
 ## Development
 
 Requires Python 3.13 and [uv](https://docs.astral.sh/uv/).
@@ -32,9 +57,8 @@ All retrieval components:
 uv run nice-mcp build-corpus --output-root data --retrievers bm25,dense
 ```
 
-By default, `auto` uses CUDA when available, then Apple MPS, and otherwise
-falls back to CPU. Use `--dense-device cpu`, `--dense-device mps`, or
-`--dense-device cuda` to override device selection.
+By default, `auto` uses Apple MPS when available and otherwise falls back to
+CPU. Use `--dense-device cpu` or `--dense-device mps` to override selection.
 
 The builder discovers NiceGUI pages from its search index, requests each page as
 Markdown using `Accept: text/markdown`, validates and chunks it, builds selected
@@ -67,7 +91,7 @@ uv run nice-mcp serve
 ```
 
 Dense and hybrid retrieval use automatic device selection by default. Set
-`NICE_MCP_DENSE_DEVICE=cpu`, `mps`, or `cuda` to override it.
+`NICE_MCP_DENSE_DEVICE=cpu` or `mps` to override it.
 
 Valid retrievers are `bm25`, `dense`, and `hybrid`.
 

@@ -1,5 +1,10 @@
 # NiceGUI Documentation MCP Server
 
+<p align="center">
+  <img src="nice-mcp.svg" alt="Nice MCP logo" width="480">
+</p>
+
+
 An unofficial, retrieval-only MCP server for NiceGUI documentation.
 It builds immutable documentation snapshots offline and exposes exactly two tools:
 
